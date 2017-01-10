@@ -4,7 +4,7 @@ import java.util.Random;
 
 public class Chromosome {
 	private String data;
-	private double fitness = 0;
+	private double fitness = 0.0d;
 	
 	public Chromosome() {
 		setData(returnRandomData());
@@ -29,7 +29,7 @@ public class Chromosome {
 	public String returnRandomData() {
 		String s = "";
 		Random r = new Random();
-		for (int i = 0; i < 36; ++i) {
+		for (int i = 0; i < Main.CHROMO_LEN; ++i) {
 			s += r.nextInt(2);
 		}
 		return s;
@@ -90,11 +90,12 @@ public class Chromosome {
 			if (first == 13 && second == 0) {
 				char[] c = finalValidChromo.toCharArray();
 				
-				c[i] = 1;
-				c[i + 1] = 0;
-				c[i + 2] = 1;
-				c[i + 3] = 0;
+				c[i] = '1';
+				c[i + 1] = '0';
+				c[i + 2] = '1';
+				c[i + 3] = '0';
 				finalValidChromo = String.copyValueOf(c);
+				break;
 			}
 		}
 		
@@ -105,7 +106,6 @@ public class Chromosome {
 	public int[] convertToSymbols() {
 		String chromo = parseChromosome();
 		int[] a = new int[chromo.length() / Main.BITS_PER_GENE];
-		
 		for (int i = 0; i < a.length; ++i) {
 			a[i] = Integer.parseInt(chromo.substring(i*Main.BITS_PER_GENE, (i + 1)*Main.BITS_PER_GENE), 2);
 		}
@@ -119,19 +119,22 @@ public class Chromosome {
 	
 	public double evaluate() {
 		int[] a = convertToSymbols();
-		double result = 0;
+		double result = a[0];
 		
-		for (int i = 0; i < a.length; i += 2) {
+		for (int i = 1; i < a.length; i += 2) {
 			switch (a[i]) {
-			case 10:
-				result += a[i + 1];
-				break;
-			case 11:
-				result -= a[i + 1];
-			case 12:
-				result *= a[i + 1];
-			case 13:
-				result /= a[i + 1];
+				case 10:
+					result += a[i + 1];
+					break;
+				case 11:
+					result -= a[i + 1];
+					break;
+				case 12:
+					result *= a[i + 1];
+					break;
+				case 13:
+					result /= a[i + 1];
+					break;
 			}
 		}
 		
@@ -144,7 +147,7 @@ public class Chromosome {
 			return 999.9d;
 		}
 		
-		return 1 / (target - result);
+		return 1 / Math.abs(target - result);
 	}
 	
 	public String toString() {
@@ -155,14 +158,14 @@ public class Chromosome {
 			etc += Main.CONV_ARRAY[a[i]];
 		}
 		
-		return data + ", " + etc + "\nfitness: " + fitness;
+		return data + "\n" + etc + "\nfitness: " + getFitness();
 	}
 	
 	public void mutate() {
 		StringBuilder s = new StringBuilder(data);
 		Random r = new Random();
 		for (int i = 0; i < s.length(); ++i) {
-			if (r.nextInt((int)(1 / Main.MUT_RATE)) < 1) {
+			if (r.nextDouble() < Main.MUT_RATE) {
 				s.setCharAt(i, s.charAt(i) == '1' ? '0' : '1');
 			}
 		}

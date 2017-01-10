@@ -44,11 +44,49 @@ public class ChromosomeFactory {
 	        while (!solutionFound) {
 	        	double totalFitness = 0;
 	        	
+	        	//update fitness
 	        	for (int i = 0; i < pop.length; ++i) {
 	        		pop[i].setFitness(pop[i].calculateFitness(target));
 	        		
 	        		totalFitness += pop[i].getFitness();
 	        	}
+	        	
+	        	//check for solutions
+	        	for (int i = 0; i < pop.length; ++i) {
+	        		if (pop[i].getFitness() == 999.9d) {
+	        			System.out.println("Solution found in " + genCount + " generations.");
+	        			System.out.println(pop[i]);
+	        			solutionFound = true;
+	        			return;
+	        		}
+	        	}
+	        	
+	        	//do the genetics
+	        	Chromosome[] temp = new Chromosome[Main.POOL_SIZE];
+	        	
+	        	int cPop = 0;
+	        	
+	        	while (cPop < Main.POOL_SIZE) {
+	        		Chromosome off1 = roulette(totalFitness);
+	        		Chromosome off2 = roulette(totalFitness);
+	        		crossover(off1, off2);
+	        		
+	        		off1.mutate();
+	        		off2.mutate();
+	        		
+	        		temp[cPop++] = off1;
+	        		temp[cPop++] = off2;
+	        	}
+	        	
+	        	pop = temp;
+	        	++genCount;
+	        	
+	        	if (genCount > Main.MAX_GENS) {
+	        		System.out.println("No solutions found.");
+	        		solutionFound = true;
+	        	}
+	        	
+	        	
 	        }
 	        
 		}
@@ -56,13 +94,15 @@ public class ChromosomeFactory {
 	
 	private void crossover(Chromosome c1, Chromosome c2) {
 		Random r = new Random();
-		if (r.nextInt((int)(1 / Main.MUT_RATE)) < 1) {
+		if (r.nextDouble() < Main.CROSS_RATE) {
 			int crossover = (int) r.nextDouble() * Main.CHROMO_LEN;
 			c1.setData(
-					c1.getData().substring(0, crossover) + c2.getData().substring(crossover, Main.CHROMO_LEN)
+					c1.getData().substring(0, crossover)
+					+ c2.getData().substring(crossover, Main.CHROMO_LEN)
 					);
 			c2.setData(
-					c2.getData().substring(0, crossover) + c1.getData().substring(crossover, Main.CHROMO_LEN)
+					c2.getData().substring(0, crossover)
+					+ c1.getData().substring(crossover, Main.CHROMO_LEN)
 					);
 		}
 	}
@@ -82,6 +122,6 @@ public class ChromosomeFactory {
 			}
 		}
 		
-		return null;
+		return new Chromosome();
 	}
 }
