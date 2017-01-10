@@ -55,7 +55,7 @@ public class ChromosomeFactory {
 	        	for (int i = 0; i < pop.length; ++i) {
 	        		if (pop[i].getFitness() == 999.9d) {
 	        			System.out.println("Solution found in " + genCount + " generations.");
-	        			System.out.println(pop[i]);
+	        			System.out.println(pop[i] + "= " + target);
 	        			solutionFound = true;
 	        			return;
 	        		}
@@ -67,8 +67,11 @@ public class ChromosomeFactory {
 	        	int cPop = 0;
 	        	
 	        	while (cPop < Main.POOL_SIZE) {
-	        		Chromosome off1 = roulette(totalFitness);
-	        		Chromosome off2 = roulette(totalFitness);
+	        		Chromosome off1 = new Chromosome();
+	        		off1.setData(roulette(totalFitness));
+	        		Chromosome off2 = new Chromosome();
+	        		off2.setData(roulette(totalFitness));
+	        		
 	        		crossover(off1, off2);
 	        		
 	        		off1.mutate();
@@ -107,7 +110,7 @@ public class ChromosomeFactory {
 		}
 	}
 	
-	private Chromosome roulette(double totalFitness) {
+	private String roulette(double totalFitness) {
 		Random r = new Random();
 		double slice = (double) (r.nextDouble() * totalFitness);
 		
@@ -116,12 +119,12 @@ public class ChromosomeFactory {
 		for (int i = 0; i < Main.POOL_SIZE; ++i) {
 			fitnessSoFar += pop[i].getFitness();
 			
-			//if the fitness so far > random number return the chromo at this point
+			//if the fitness so far > random number return the chromosome at this point
 			if (fitnessSoFar >= slice) {
-				return pop[i];
+				return pop[i].getData();
 			}
 		}
 		
-		return new Chromosome();
+		return "";
 	}
 }

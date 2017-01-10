@@ -129,12 +129,12 @@ public class Chromosome {
 				case 11:
 					result -= a[i + 1];
 					break;
-				case 12:
+				/*case 12:
 					result *= a[i + 1];
 					break;
 				case 13:
 					result /= a[i + 1];
-					break;
+					break;*/
 			}
 		}
 		
@@ -155,10 +155,10 @@ public class Chromosome {
 		int[] a = convertToSymbols();
 		
 		for (int i = 0; i < a.length; ++i) {
-			etc += Main.CONV_ARRAY[a[i]];
+			etc +=  "" + Main.CONV_ARRAY[a[i]] + " ";
 		}
 		
-		return data + "\n" + etc + "\nfitness: " + getFitness();
+		return data + "\nfitness: " + getFitness() + " \n" + etc;
 	}
 	
 	public void mutate() {
