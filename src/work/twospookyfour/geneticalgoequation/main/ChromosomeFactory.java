@@ -7,11 +7,11 @@ import java.util.Random;
 
 public class ChromosomeFactory {
 	
-	Chromosome[] pop;
+	Chromosome<String>[] pop;
 	
-	Chromosome makeRandomChromosome() {
-		Chromosome c = new Chromosome();
-		c.setData(c.returnRandomData());
+	Chromosome<String> makeRandomChromosome() {
+		Chromosome<String> c = new Chromosome<String>(new EquationChromosomeGene());
+		c.randomizeGene();
 		return c;
 	}
 	
@@ -21,6 +21,7 @@ public class ChromosomeFactory {
 		double target;
 		int genCount;
 		boolean solutionFound;
+		Chromosome<String> bestSolution;
 		
         
 		while (true) {
@@ -35,8 +36,9 @@ public class ChromosomeFactory {
 			}
 	        
 	        for (int i = 0; i < pop.length; ++i) {
-	        	pop[i] = new Chromosome();
+	        	pop[i] = makeRandomChromosome();
 	        }
+	        bestSolution = pop[0];
 	        
 	        genCount = 0;
 	        solutionFound = false;
@@ -48,17 +50,14 @@ public class ChromosomeFactory {
 	        	for (int i = 0; i < pop.length; ++i) {
 	        		pop[i].setFitness(pop[i].calculateFitness(target));
 	        		
-	        		totalFitness += pop[i].getFitness();
-	        	}
-	        	
-	        	//check for solutions
-	        	for (int i = 0; i < pop.length; ++i) {
-	        		if (pop[i].getFitness() == 999.9d) {
-	        			System.out.println("Solution found in " + genCount + " generations.");
-	        			System.out.println(pop[i] + "= " + target);
-	        			solutionFound = true;
-	        			return;
+	        		if (pop[i].getFitness() > bestSolution.getFitness()) {
+
+	        			bestSolution = new Chromosome<String>(pop[i]);
+	        			
+	        			System.out.println(bestSolution + " = " + bestSolution.getGene().evaluate());
 	        		}
+	        		
+	        		totalFitness += pop[i].getFitness();
 	        	}
 	        	
 	        	//do the genetics
@@ -67,10 +66,10 @@ public class ChromosomeFactory {
 	        	int cPop = 0;
 	        	
 	        	while (cPop < Main.POOL_SIZE) {
-	        		Chromosome off1 = new Chromosome();
-	        		off1.setData(roulette(totalFitness));
-	        		Chromosome off2 = new Chromosome();
-	        		off2.setData(roulette(totalFitness));
+	        		Chromosome<String> off1 = new Chromosome<String>(
+	        				roulette(totalFitness));
+	        		Chromosome<String> off2 = new Chromosome<String>(
+	        				roulette(totalFitness));
 	        		
 	        		crossover(off1, off2);
 	        		
@@ -85,7 +84,9 @@ public class ChromosomeFactory {
 	        	++genCount;
 	        	
 	        	if (genCount > Main.MAX_GENS) {
-	        		System.out.println("No solutions found.");
+	        		//System.out.println("No perfect solutions found.");
+	        		System.out.println("Best solution:");
+	        		System.out.println(bestSolution + " = " + bestSolution.evaluate());
 	        		solutionFound = true;
 	        	}
 	        	
@@ -95,22 +96,25 @@ public class ChromosomeFactory {
 		}
 	}
 	
-	private void crossover(Chromosome c1, Chromosome c2) {
+	private void crossover(Chromosome<String> c1, Chromosome<String> c2) {
 		Random r = new Random();
 		if (r.nextDouble() < Main.CROSS_RATE) {
+			
 			int crossover = (int) r.nextDouble() * Main.CHROMO_LEN;
-			c1.setData(
-					c1.getData().substring(0, crossover)
-					+ c2.getData().substring(crossover, Main.CHROMO_LEN)
-					);
-			c2.setData(
-					c2.getData().substring(0, crossover)
-					+ c1.getData().substring(crossover, Main.CHROMO_LEN)
-					);
+
+			c1.getGene()
+				.setData(
+						c1.getGene().getData().substring(0, crossover)
+						+ c2.getGene().getData().substring(crossover, Main.CHROMO_LEN));
+			
+			c2.getGene()
+				.setData(
+					c2.getGene().getData().substring(0, crossover)
+					+ c1.getGene().getData().substring(crossover, Main.CHROMO_LEN));
 		}
 	}
 	
-	private String roulette(double totalFitness) {
+	private EquationChromosomeGene roulette(double totalFitness) {
 		Random r = new Random();
 		double slice = (double) (r.nextDouble() * totalFitness);
 		
@@ -121,10 +125,10 @@ public class ChromosomeFactory {
 			
 			//if the fitness so far > random number return the chromosome at this point
 			if (fitnessSoFar >= slice) {
-				return pop[i].getData();
+				return (EquationChromosomeGene) pop[i].getGene();
 			}
 		}
 		
-		return "";
+		return new EquationChromosomeGene();
 	}
 }
