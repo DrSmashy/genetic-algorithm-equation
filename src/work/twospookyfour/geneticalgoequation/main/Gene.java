@@ -16,5 +16,5 @@ public interface Gene<T> {
 	
 	public void mutate();
 	
-	public Gene<?> copy();
+	public Gene<T> copy();
 }

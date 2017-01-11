@@ -181,7 +181,7 @@ public class EquationChromosomeGene implements Gene<String> {
 		setData(s.toString());
 	}
 
-	public Gene<?> copy() {
+	public Gene<String> copy() {
 		return new EquationChromosomeGene(getData());
 	}
 
